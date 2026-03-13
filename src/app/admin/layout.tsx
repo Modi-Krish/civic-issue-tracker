@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import {
@@ -6,9 +5,9 @@ import {
     MapPin,
     Users,
     Building2,
-    LogOut,
     ClipboardList,
 } from "lucide-react";
+import HamburgerSidebar from "@/components/HamburgerSidebar";
 
 export default async function AdminLayout({
     children,
@@ -22,76 +21,34 @@ export default async function AdminLayout({
 
     if (!user) redirect("/login");
 
+    const navLinks = [
+        { href: "/admin", icon: <ClipboardList className="w-4 h-4" />, label: "Dashboard" },
+        { href: "/admin/issues", icon: <MapPin className="w-4 h-4" />, label: "Issues" },
+        { href: "/admin/bikers", icon: <Users className="w-4 h-4" />, label: "Bikers" },
+        { href: "/admin/departments", icon: <Building2 className="w-4 h-4" />, label: "Departments" },
+    ];
+
     return (
-        <div className="flex h-screen bg-slate-950 text-white">
-            {/* Sidebar */}
-            <aside className="w-64 border-r border-white/10 bg-slate-900/50 flex flex-col">
-                <div className="p-6 border-b border-white/10">
-                    <h2 className="text-lg font-bold flex items-center gap-2">
-                        <LayoutDashboard className="w-5 h-5 text-blue-400" />
-                        Admin Panel
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-1">{user.email}</p>
-                </div>
+        <div className="relative h-screen text-white overflow-hidden" style={{ background: "linear-gradient(135deg, #050508 0%, #0a0e17 40%, #060a12 100%)" }}>
+            {/* Ambient Glow Orbs */}
+            <div className="glow-orb glow-orb-blue hidden sm:block" style={{ top: "-15%", left: "-8%", width: "55%", height: "55%" }} />
+            <div className="glow-orb glow-orb-emerald hidden sm:block" style={{ bottom: "-12%", right: "-8%", width: "45%", height: "45%" }} />
+            <div className="glow-orb glow-orb-purple hidden sm:block" style={{ top: "40%", right: "10%", width: "30%", height: "30%", opacity: 0.3 }} />
 
-                <nav className="flex-1 p-4 space-y-1">
-                    <SidebarLink
-                        href="/admin"
-                        icon={<ClipboardList className="w-4 h-4" />}
-                        label="Dashboard"
-                    />
-                    <SidebarLink
-                        href="/admin/issues"
-                        icon={<MapPin className="w-4 h-4" />}
-                        label="Issues"
-                    />
-                    <SidebarLink
-                        href="/admin/bikers"
-                        icon={<Users className="w-4 h-4" />}
-                        label="Bikers"
-                    />
-                    <SidebarLink
-                        href="/admin/departments"
-                        icon={<Building2 className="w-4 h-4" />}
-                        label="Departments"
-                    />
-                </nav>
-
-                <div className="p-4 border-t border-white/10">
-                    <form action="/auth/signout" method="post">
-                        <button
-                            type="submit"
-                            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors w-full"
-                        >
-                            <LogOut className="w-4 h-4" />
-                            Sign Out
-                        </button>
-                    </form>
-                </div>
-            </aside>
-
-            {/* Main content */}
-            <main className="flex-1 overflow-y-auto p-8">{children}</main>
+            <HamburgerSidebar
+                title="Admin Panel"
+                titleIcon={<LayoutDashboard className="w-5 h-5" />}
+                accentColor="text-blue-400"
+                navLinks={navLinks}
+                userEmail={user.email ?? ""}
+            />
+            {/* Offset for fixed top navbar — top: 56px = h-14 */}
+            <main
+                className="absolute inset-0 overflow-y-auto"
+                style={{ top: "56px", zIndex: 1 }}
+            >
+                <div className="max-w-[1300px] mx-auto px-4 py-5 sm:px-8 sm:py-8">{children}</div>
+            </main>
         </div>
-    );
-}
-
-function SidebarLink({
-    href,
-    icon,
-    label,
-}: {
-    href: string;
-    icon: React.ReactNode;
-    label: string;
-}) {
-    return (
-        <Link
-            href={href}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
-        >
-            {icon}
-            {label}
-        </Link>
     );
 }

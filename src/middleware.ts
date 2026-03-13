@@ -73,7 +73,13 @@ export async function middleware(request: NextRequest) {
     // ── Unauthorized → redirect to their own dashboard ──
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = allowedPrefix || "/login";
-    return NextResponse.redirect(redirectUrl);
+
+    // Create a redirect response but copy the cookies over from the updated session
+    const finalResponse = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+        finalResponse.cookies.set(cookie.name, cookie.value);
+    });
+    return finalResponse;
 }
 
 export const config = {

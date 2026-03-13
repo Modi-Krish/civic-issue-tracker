@@ -6,7 +6,7 @@ import { MapPin } from "lucide-react";
 const Map = dynamic(() => import("@/components/Map"), {
     ssr: false,
     loading: () => (
-        <div className="h-full w-full bg-slate-900/50 animate-pulse rounded-2xl flex items-center justify-center border border-white/10">
+        <div className="w-full bg-slate-900/50 animate-pulse rounded-2xl flex items-center justify-center border border-white/10" style={{ height: "480px" }}>
             <MapPin className="w-8 h-8 text-slate-700" />
         </div>
     ),
@@ -27,6 +27,7 @@ export default function BikerMapView({ markers }: { markers?: Marker[] }) {
             center={[20.5937, 78.9629]}
             zoom={5}
             markers={markers}
+            height="480px"
         />
     );
 }

@@ -23,11 +23,18 @@ const Map = dynamic(() => import("@/components/Map"), {
     ),
 });
 
-interface IssueFormProps {
-    departments: Department[];
+interface Biker {
+    id: string;
+    full_name: string | null;
+    email: string;
 }
 
-export default function IssueForm({ departments }: IssueFormProps) {
+interface IssueFormProps {
+    departments: Department[];
+    bikers: Biker[];
+}
+
+export default function IssueForm({ departments, bikers }: IssueFormProps) {
     const router = useRouter();
     const supabase = createClient();
 
@@ -41,6 +48,7 @@ export default function IssueForm({ departments }: IssueFormProps) {
         priority: "low" as IssuePriority,
         lat: 20.5937,
         lng: 78.9629,
+        assigned_biker_id: "",
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -55,9 +63,17 @@ export default function IssueForm({ departments }: IssueFormProps) {
                 .from("issues")
                 .insert([
                     {
-                        ...formData,
+                        title: formData.title,
+                        description: formData.description,
+                        department_id: formData.department_id,
+                        priority: formData.priority,
+                        lat: formData.lat,
+                        lng: formData.lng,
                         reported_by: user?.id,
                         status: "pending",
+                        ...(formData.assigned_biker_id
+                            ? { assigned_biker_id: formData.assigned_biker_id }
+                            : {}),
                     },
                 ]);
 
@@ -142,6 +158,25 @@ export default function IssueForm({ departments }: IssueFormProps) {
                                 <option value="high">High</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                            Assign to Field Worker
+                            <span className="ml-1 text-slate-500 font-normal">(optional)</span>
+                        </label>
+                        <select
+                            className="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                            value={formData.assigned_biker_id}
+                            onChange={(e) => setFormData({ ...formData, assigned_biker_id: e.target.value })}
+                        >
+                            <option value="">— Unassigned —</option>
+                            {bikers.map((biker) => (
+                                <option key={biker.id} value={biker.id}>
+                                    {biker.full_name || biker.email}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 

@@ -131,7 +131,7 @@ CREATE POLICY "Users can update own profile"
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
--- Issues: viewable by admin, assigned biker, or department member
+-- Issues: viewable by admin, assigned biker, reporter, or department member
 CREATE POLICY "Issues viewable by role"
   ON public.issues FOR SELECT
   TO authenticated
@@ -140,19 +140,23 @@ CREATE POLICY "Issues viewable by role"
       SELECT 1 FROM public.users u WHERE u.id = auth.uid()
       AND (
         u.role = 'admin'
-        OR (u.role = 'biker' AND public.issues.assigned_biker_id = auth.uid())
+        OR (u.role = 'biker' AND (
+              public.issues.assigned_biker_id = auth.uid()
+              OR public.issues.reported_by = auth.uid()
+           ))
         OR (u.role = 'department' AND public.issues.department_id = u.department_id)
       )
     )
   );
 
--- Issues: only admins can insert
-CREATE POLICY "Admins can create issues"
+-- Issues: admins and bikers can insert
+CREATE POLICY "Admins and bikers can create issues"
   ON public.issues FOR INSERT
   TO authenticated
   WITH CHECK (
     EXISTS (
-      SELECT 1 FROM public.users u WHERE u.id = auth.uid() AND u.role = 'admin'
+      SELECT 1 FROM public.users u WHERE u.id = auth.uid()
+      AND u.role IN ('admin', 'biker')
     )
   );
 

@@ -60,6 +60,7 @@ function LoginForm() {
                 biker: "/biker",
                 department: "/department",
             };
+            router.refresh(); // Crucial for Server Components to get the new cookies
             router.push(dashboardMap[profile.role] || "/login");
         }
 
@@ -70,14 +71,14 @@ function LoginForm() {
         <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
             <div className="w-full max-w-md">
                 {/* Header */}
-                <div className="text-center mb-8">
+                <div className="text-center mb-6">
                     <div className="flex items-center justify-center gap-2 mb-3">
                         <Shield className="w-8 h-8 text-blue-400" />
                         <span className="text-2xl font-bold text-white">
                             Civic Issue Tracker
                         </span>
                     </div>
-                    <p className="text-slate-400">Sign in to your dashboard</p>
+                    <p className="text-slate-400 mt-2">Sign in to your dashboard</p>
                 </div>
 
                 {/* Card */}

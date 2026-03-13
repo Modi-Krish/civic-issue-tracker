@@ -11,14 +11,31 @@ export default async function BikerImportantPage() {
     } = await supabase.auth.getUser();
     if (!user) redirect("/login");
 
-    // Fetch only HIGH priority, non-resolved issues assigned to this biker
-    const { data: urgentIssues } = await supabase
+    // Fetch HIGH priority, non-resolved issues ASSIGNED to this biker
+    const { data: assignedIssues } = await supabase
         .from("issues")
         .select("*, departments(name)")
         .eq("assigned_biker_id", user.id)
         .eq("priority", "high")
         .neq("status", "resolved")
         .order("created_at", { ascending: false });
+
+    // Also fetch HIGH priority, non-resolved issues REPORTED by this biker
+    const { data: reportedIssues } = await supabase
+        .from("issues")
+        .select("*, departments(name)")
+        .eq("reported_by", user.id)
+        .eq("priority", "high")
+        .neq("status", "resolved")
+        .order("created_at", { ascending: false });
+
+    // Merge and deduplicate
+    const seen = new Set<string>();
+    const urgentIssues = [...(assignedIssues ?? []), ...(reportedIssues ?? [])].filter((issue) => {
+        if (seen.has(issue.id)) return false;
+        seen.add(issue.id);
+        return true;
+    });
 
     return (
         <div className="max-w-4xl mx-auto">

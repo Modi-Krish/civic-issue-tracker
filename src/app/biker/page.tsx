@@ -23,19 +23,28 @@ export default async function BikerHomePage() {
         .select("id, name")
         .order("name");
 
-    // Fetch summary stats
-    const { data: assignedIssues } = await supabase
-        .from("issues")
-        .select("id, status, priority")
-        .eq("assigned_biker_id", user.id);
+    // Fetch ALL issues this biker is involved with (reported OR assigned)
+    const [{ data: reportedIssues }, { data: assignedIssues }] = await Promise.all([
+        supabase
+            .from("issues")
+            .select("id, status, priority")
+            .eq("reported_by", user.id),
+        supabase
+            .from("issues")
+            .select("id, status, priority")
+            .eq("assigned_biker_id", user.id)
+            .neq("reported_by", user.id), // avoid double-counting
+    ]);
 
-    const pending = assignedIssues?.filter((i) => i.status === "pending") ?? [];
-    const inProgress = assignedIssues?.filter((i) => i.status === "in_progress") ?? [];
-    const resolved = assignedIssues?.filter((i) => i.status === "resolved") ?? [];
-    const highPriority = assignedIssues?.filter((i) => i.priority === "high" && i.status !== "resolved") ?? [];
+    const allIssues = [...(reportedIssues ?? []), ...(assignedIssues ?? [])];
+
+    const pending = allIssues.filter((i) => i.status === "pending");
+    const inProgress = allIssues.filter((i) => i.status === "in_progress");
+    const resolved = allIssues.filter((i) => i.status === "resolved");
+    const highPriority = allIssues.filter((i) => i.priority === "high" && i.status !== "resolved");
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div>
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold mb-1">Biker Home</h1>

@@ -12,6 +12,13 @@ export default async function NewIssuePage() {
         .select("*")
         .order("name");
 
+    // Fetch bikers for assignment
+    const { data: bikers } = await supabase
+        .from("users")
+        .select("id, full_name, email")
+        .eq("role", "biker")
+        .order("full_name");
+
     return (
         <div className="max-w-4xl mx-auto">
             <div className="mb-8">
@@ -26,8 +33,9 @@ export default async function NewIssuePage() {
                 <p className="text-slate-400 mt-1">Fill in the details below to log a new issue into the system.</p>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm shadow-xl">
-                <IssueForm departments={departments || []} />
+            <div className="bg-white/[0.03] border border-white/[0.08] rounded-[20px] p-8 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.2)] relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+                <IssueForm departments={departments || []} bikers={bikers || []} />
             </div>
         </div>
     );
